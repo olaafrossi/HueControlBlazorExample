@@ -1,7 +1,45 @@
 ﻿@page "/"
+@using HueControlBlazorExampleWebApp.Services
+@using HueControlBlazorExampleWebApp.Pages.Components
+@inject IChatService ChatService
 
-<h1>Hue Controller</h1>
+@if (null != _loginBox?.User)
+{
+    <div class="row h-100">
+        <Users />
+        <div class="col m-1">
+            <h1>Hue Controller</h1>
 
-This application allows you to control Hue lights in homes. It must be paired up with the code here: https://github.com/olaafrossi/HueControlExample
+            This application allows you to control Hue lights in homes. It must be paired up with the code here: https://github.com/olaafrossi/HueControlExample
 
-@*<SurveyPrompt Title="How is Blazor working for you?" />*@
+            <Chat/>
+            <MessageForm LoggedUser=@_loginBox.User/>
+        </div>
+    </div>
+}
+else
+{
+    <Login @ref="_loginBox" />
+}
+
+@code{
+    private Login _loginBox;
+    private ViewModels.PostMessage _message = new ViewModels.PostMessage();
+
+    protected override void OnInitialized()
+    {
+        if (null != this.ChatService)
+            this.ChatService.UserLoggedIn += OnUserLoggedIn;
+    }
+
+    private async void OnUserLoggedIn(object sender, UserLoginEventArgs args)
+    {
+        await InvokeAsync(this.StateHasChanged);
+    }
+
+    private void Dispose()
+    {
+        if (null != this.ChatService)
+            this.ChatService.UserLoggedIn -= OnUserLoggedIn;
+    }
+}
